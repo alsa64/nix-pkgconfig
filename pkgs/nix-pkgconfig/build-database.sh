@@ -29,8 +29,7 @@ if [[ ! -e "$XDG_CACHE_HOME/nix-index" ]] || [[ "$1" == "--update" ]]; then
 fi
 
 echo "building pkg-config database..."
-nix run nixpkgs.nix-index nixpkgs.python3 -c \
-  python3 ./build-pc-index.py -o database.json
+python3 ./build-pc-index.py -o database.json
 
 dest="$XDG_CONFIG_HOME/nix-pkgconfig"
 mkdir -p $dest
