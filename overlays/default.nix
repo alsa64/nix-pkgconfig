@@ -1,11 +1,11 @@
 { inputs, outputs }:
 {
   default = final: prev: {
-    nix-pkgconfig = final.callPackage ../pkgs/nix-pkgconfig { };
+    nix-pkg-config = final.callPackage ../pkgs/nix-pkg-config { };
 
     # Wrapper version that replaces pkg-config system-wide
-    nix-pkgconfig-wrapped = final.writeShellScriptBin "pkg-config" ''
-      exec ${final.nix-pkgconfig}/bin/pkg-config "$@"
+    nix-pkg-config-wrapped = final.writeShellScriptBin "pkg-config" ''
+      exec ${final.nix-pkg-config}/bin/pkg-config "$@"
     '';
   };
 }

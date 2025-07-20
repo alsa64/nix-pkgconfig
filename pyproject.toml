@@ -1,0 +1,15 @@
+[project]
+name = "nix-pkg-config"
+version = "1.0.0"
+description = "`nix-pkg-config` is a wrapper for `pkg-config` allowing nix-unaware applications (e.g. `cabal-install`) to use packages from `nixpkgs` (to satisfy native library dependencies)."
+authors = [{ name = "vyls", email = "git@feils.me" }]
+requires-python = ">=3.11"
+dependencies = []
+
+[project.scripts]
+pkg-config = "pkg_config:main"
+nix-pkg-config = "pkg_config:main"
+nix-pkg-config-build-pc-index = "build_pc_index:main"
+
+[tool.setuptools.packages.find]
+where = ["pkgs/nix-pkg-config/src"]

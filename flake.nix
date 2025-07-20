@@ -72,9 +72,9 @@
     {
       # Packages for each system
       packages = forEachSystem (system: {
-        default = self.packages.${system}.nix-pkgconfig;
-        nix-pkgconfig = (pkgsFor system).nix-pkgconfig;
-        nix-pkgconfig-wrapped = (pkgsFor system).nix-pkgconfig-wrapped;
+        default = self.packages.${system}.nix-pkg-config;
+        nix-pkg-config = (pkgsFor system).nix-pkg-config;
+        nix-pkg-config-wrapped = (pkgsFor system).nix-pkg-config-wrapped;
       });
 
       # Overlays
@@ -88,8 +88,8 @@
       homeManagerModules.default = import ./modules/home-manager.nix;
 
       # Config modules for direct import
-      nixosModules.nix-pkgconfig = import ./modules/nixos.nix;
-      homeManagerModules.nix-pkgconfig = import ./modules/home-manager.nix;
+      nixosModules.nix-pkg-config = import ./modules/nixos.nix;
+      homeManagerModules.nix-pkg-config = import ./modules/home-manager.nix;
 
       # Development shell
       devShells = forEachSystem (system: {
@@ -115,7 +115,7 @@
 
       # Checks
       checks = forEachSystem (system: {
-        nix-pkgconfig = self.packages.${system}.nix-pkgconfig;
+        nix-pkg-config = self.packages.${system}.nix-pkg-config;
         formatting = treefmtEval.${system}.config.build.check self;
       });
     };

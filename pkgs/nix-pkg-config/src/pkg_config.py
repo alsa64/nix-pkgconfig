@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""nix-pkgconfig: A wrapper for pkg-config that uses nixpkgs packages.
+"""nix-pkg-config: A wrapper for pkg-config that uses nixpkgs packages.
 
 This script intercepts pkg-config calls and uses Nix to provide dependencies
 from nixpkgs packages, allowing nix-unaware applications to use Nix packages.
@@ -23,7 +23,7 @@ NixAttr = NewType("NixAttr", str)
 
 
 def find_databases() -> list[Path]:
-    """Find available nix-pkgconfig database files.
+    """Find available nix-pkg-config database files.
 
     Returns:
         List of database file paths, either from NIX_PKGCONFIG_DATABASES
@@ -33,7 +33,7 @@ def find_databases() -> list[Path]:
         return [Path(db) for db in databases.split(":") if db]
 
     config_home = Path(os.environ.get("XDG_CONFIG_HOME", Path.home() / ".config"))
-    return sorted((config_home / "nix-pkgconfig").glob("*.json"))
+    return sorted((config_home / "nix-pkg-config").glob("*.json"))
 
 
 def read_databases(databases: list[Path]) -> dict[PackageName, NixAttr]:
@@ -97,7 +97,7 @@ def call_pkgconfig(attrs: list[NixAttr], args: list[str]) -> str:
 
         # Build the attribute and register roots for garbage collection protection
         if attrs:
-            root_dir = Path.cwd() / ".nix-pkgconfig" / "roots"
+            root_dir = Path.cwd() / ".nix-pkg-config" / "roots"
             root_dir.mkdir(parents=True, exist_ok=True)
             link = root_dir / f"result-{time()}"
             build_cmd = ["nix", "build", "-f", nixpkgs, "-o", str(link)] + list(attrs)
@@ -116,7 +116,7 @@ def call_pkgconfig(attrs: list[NixAttr], args: list[str]) -> str:
 
 
 def main() -> None:
-    """Main entry point for nix-pkgconfig.
+    """Main entry point for nix-pkg-config.
 
     Processes command line arguments, finds appropriate nixpkgs attributes
     for requested packages, and calls pkg-config via Nix.
@@ -129,7 +129,7 @@ def main() -> None:
         result = call_pkgconfig([], sys.argv[1:])
         print(result, end="")
         for pkg in pkgs:
-            print(f"{pkg}    placeholder from nix-pkgconfig")
+            print(f"{pkg}    placeholder from nix-pkg-config")
     else:
         # Map package names to nixpkgs attributes
         attrs: list[NixAttr] = []

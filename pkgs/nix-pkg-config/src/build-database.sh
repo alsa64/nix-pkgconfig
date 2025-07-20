@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Build a comprehensive database for nix-pkgconfig
+# Build a comprehensive database for nix-pkg-config
 #
 # This script creates a database mapping pkg-config package names to nixpkgs
 # attributes by using nix-locate to scan the entire nixpkgs repository.
@@ -12,7 +12,7 @@ show_help() {
 Usage: $0 [--help] [--update]
 
 Builds a database of nix derivations and their provided .pc files for
-nix-pkgconfig
+nix-pkg-config
 
 Options:
     --update   Force update of nix-locate database
@@ -51,7 +51,7 @@ if ! python3 ./build-pc-index.py -o database.json; then
   exit 1
 fi
 
-dest="$XDG_CONFIG_HOME/nix-pkgconfig"
+dest="$XDG_CONFIG_HOME/nix-pkg-config"
 mkdir -p "$dest"
 echo "Installing database to $dest..."
 

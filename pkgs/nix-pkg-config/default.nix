@@ -11,7 +11,7 @@
 assert lib.versionAtLeast python3.version "3.11";
 
 stdenv.mkDerivation (finalAttrs: {
-  pname = "nix-pkgconfig";
+  pname = "nix-pkg-config";
   version = "1.0.0";
 
   src = ./.;
@@ -27,34 +27,34 @@ stdenv.mkDerivation (finalAttrs: {
   installPhase = ''
         runHook preInstall
 
-        mkdir -p $out/bin $out/share/nix-pkgconfig
+        mkdir -p $out/bin $out/share/nix-pkg-config
 
         # Install the main Python script (unwrapped for development use)
-        cp pkg-config.py $out/bin/pkg-config.py
+        cp src/pkg_config.py $out/bin/pkg-config.py
         chmod +x $out/bin/pkg-config.py
         
         # Create a wrapper script without .py extension  
         cat > $out/bin/pkg-config <<EOF
     #!/bin/sh
-    exec "${python3.interpreter}" "$out/bin/nix-pkgconfig.py" "\$@"
+    exec "${python3.interpreter}" "$out/bin/nix-pkg-config.py" "\$@"
     EOF
         chmod +x $out/bin/pkg-config
         
         # Create wrapped version of Python script for Nix runtime
-        cp pkg-config.py $out/bin/nix-pkgconfig.py
-        chmod +x $out/bin/nix-pkgconfig.py
+        cp src/pkg_config.py $out/bin/nix-pkg-config.py
+        chmod +x $out/bin/nix-pkg-config.py
 
         # Install helper scripts
-        cp build-database.sh $out/bin/nix-pkgconfig-build-database
-        cp build-pc-index.py $out/bin/nix-pkgconfig-build-pc-index
-        chmod +x $out/bin/nix-pkgconfig-build-database
-        chmod +x $out/bin/nix-pkgconfig-build-pc-index
+        cp src/build-database.sh $out/bin/nix-pkg-config-build-database
+        cp src/build_pc_index.py $out/bin/nix-pkg-config-build-pc-index
+        chmod +x $out/bin/nix-pkg-config-build-database
+        chmod +x $out/bin/nix-pkg-config-build-pc-index
 
         # Install default database
-        cp default-database.json $out/share/nix-pkgconfig/default-database.json
+        cp src/default-database.json $out/share/nix-pkg-config/default-database.json
 
         # Wrap the runtime version with proper dependencies  
-        wrapProgram $out/bin/nix-pkgconfig.py \
+        wrapProgram $out/bin/nix-pkg-config.py \
           --prefix PATH : ${lib.makeBinPath [ nix ]} \
           --prefix PYTHONPATH : ${python3.pkgs.makePythonPath finalAttrs.pythonPath} \
           --set NIX_PATH nixpkgs=${"\${NIX_PATH:-<nixpkgs>}"}
@@ -63,7 +63,7 @@ stdenv.mkDerivation (finalAttrs: {
         wrapProgram $out/bin/pkg-config \
           --prefix PATH : ${lib.makeBinPath [ nix ]}
 
-        wrapProgram $out/bin/nix-pkgconfig-build-database \
+        wrapProgram $out/bin/nix-pkg-config-build-database \
           --prefix PATH : ${
             lib.makeBinPath [
               nix
@@ -75,7 +75,7 @@ stdenv.mkDerivation (finalAttrs: {
           --set NIX_PATH nixpkgs=${"\${NIX_PATH:-<nixpkgs>}"} \
           --set PYTHON ${python3.interpreter}
 
-        wrapProgram $out/bin/nix-pkgconfig-build-pc-index \
+        wrapProgram $out/bin/nix-pkg-config-build-pc-index \
           --prefix PATH : ${lib.makeBinPath [ nix-index ]} \
           --prefix PYTHONPATH : ${python3.pkgs.makePythonPath finalAttrs.pythonPath} \
           --set PYTHON ${python3.interpreter}
@@ -86,12 +86,12 @@ stdenv.mkDerivation (finalAttrs: {
   meta = with lib; {
     description = "A wrapper for pkg-config that uses nixpkgs packages";
     longDescription = ''
-      nix-pkgconfig is a wrapper for pkg-config allowing nix-unaware applications
+      nix-pkg-config is a wrapper for pkg-config allowing nix-unaware applications
       (e.g. cabal-install) to use packages from nixpkgs to satisfy native library
       dependencies. It provides seamless integration between traditional build
       systems and the Nix package ecosystem.
     '';
-    homepage = "https://github.com/vyls/nix-pkgconfig";
+    homepage = "https://github.com/vyls/nix-pkg-config";
     license = licenses.mit;
     maintainers = [ ];
     platforms = platforms.unix;

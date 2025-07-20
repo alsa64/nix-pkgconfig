@@ -2,7 +2,7 @@
 """Build a database of pkg-config files and their nixpkgs attributes.
 
 This script uses nix-locate to find all .pc files in nixpkgs and creates
-a mapping database for nix-pkgconfig to use.
+a mapping database for nix-pkg-config to use.
 """
 
 from __future__ import annotations
@@ -88,7 +88,7 @@ def main() -> None:
         "--output",
         type=argparse.FileType("w"),
         default=sys.stdout,
-        help="Output nix-pkgconfig database file (default: stdout)",
+        help="Output nix-pkg-config database file (default: stdout)",
     )
     parser.add_argument(
         "-d", "--database", type=str, help="Input nix-locate database file"

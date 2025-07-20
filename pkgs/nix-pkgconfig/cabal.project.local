@@ -1,6 +1,0 @@
-package postgresql-libpq
-  flags: use-pkg-config
-
-package zlib
-  flags: pkg-config
-

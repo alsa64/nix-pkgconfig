@@ -6,26 +6,26 @@
 }:
 
 let
-  cfg = config.programs.nix-pkgconfig;
+  cfg = config.programs.nix-pkg-config;
 in
 {
-  options.programs.nix-pkgconfig = {
-    enable = lib.mkEnableOption "nix-pkgconfig, a wrapper for pkg-config that uses nixpkgs";
+  options.programs.nix-pkg-config = {
+    enable = lib.mkEnableOption "nix-pkg-config, a wrapper for pkg-config that uses nixpkgs";
 
     package = lib.mkOption {
       type = lib.types.package;
-      default = pkgs.nix-pkgconfig;
-      defaultText = lib.literalExpression "pkgs.nix-pkgconfig";
-      description = "The nix-pkgconfig package to use.";
+      default = pkgs.nix-pkg-config;
+      defaultText = lib.literalExpression "pkgs.nix-pkg-config";
+      description = "The nix-pkg-config package to use.";
     };
 
     wrapPkgConfig = lib.mkOption {
       type = lib.types.bool;
       default = false;
       description = ''
-        Whether to wrap the system pkg-config command with nix-pkgconfig.
+        Whether to wrap the system pkg-config command with nix-pkg-config.
         When enabled, pkg-config commands will automatically use nixpkgs packages.
-        When disabled, only the nix-pkgconfig binary will be available.
+        When disabled, only the nix-pkg-config binary will be available.
       '';
     };
   };
