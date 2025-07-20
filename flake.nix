@@ -44,17 +44,11 @@
             taplo.enable = true;
             ruff-format = {
               enable = true;
-              includes = [
-                "*.py"
-                "pkg-config"
-              ];
+              includes = [ "*.py" ];
             };
             ruff-check = {
               enable = true;
-              includes = [
-                "*.py"
-                "pkg-config"
-              ];
+              includes = [ "*.py" ];
             };
           };
           settings.global.excludes = [

@@ -42,12 +42,12 @@ includes = ["*.sh", "*.bash"]
 [formatter.python-format]
 command = "ruff"
 options = ["format"]
-includes = ["*.py", "pkg-config"]
+includes = ["*.py"]
 
 [formatter.python-lint]
 command = "ruff"
 options = ["check", "--fix"]
-includes = ["*.py", "pkg-config"]
+includes = ["*.py"]
 
 # Rust files
 [formatter.rust]

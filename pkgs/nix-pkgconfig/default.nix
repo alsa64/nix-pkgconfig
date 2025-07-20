@@ -25,48 +25,62 @@ stdenv.mkDerivation (finalAttrs: {
   dontBuild = true;
 
   installPhase = ''
-    runHook preInstall
+        runHook preInstall
 
-    mkdir -p $out/bin $out/share/nix-pkgconfig
+        mkdir -p $out/bin $out/share/nix-pkgconfig
 
-    # Install the main script
-    cp pkg-config $out/bin/pkg-config
-    chmod +x $out/bin/pkg-config
+        # Install the main Python script (unwrapped for development use)
+        cp pkg-config.py $out/bin/pkg-config.py
+        chmod +x $out/bin/pkg-config.py
+        
+        # Create a wrapper script without .py extension  
+        cat > $out/bin/pkg-config <<EOF
+    #!/bin/sh
+    exec "${python3.interpreter}" "$out/bin/nix-pkgconfig.py" "\$@"
+    EOF
+        chmod +x $out/bin/pkg-config
+        
+        # Create wrapped version of Python script for Nix runtime
+        cp pkg-config.py $out/bin/nix-pkgconfig.py
+        chmod +x $out/bin/nix-pkgconfig.py
 
-    # Install helper scripts
-    cp build-database.sh $out/bin/nix-pkgconfig-build-database
-    cp build-pc-index.py $out/bin/nix-pkgconfig-build-pc-index
-    chmod +x $out/bin/nix-pkgconfig-build-database
-    chmod +x $out/bin/nix-pkgconfig-build-pc-index
+        # Install helper scripts
+        cp build-database.sh $out/bin/nix-pkgconfig-build-database
+        cp build-pc-index.py $out/bin/nix-pkgconfig-build-pc-index
+        chmod +x $out/bin/nix-pkgconfig-build-database
+        chmod +x $out/bin/nix-pkgconfig-build-pc-index
 
-    # Install default database
-    cp default-database.json $out/share/nix-pkgconfig/default-database.json
+        # Install default database
+        cp default-database.json $out/share/nix-pkgconfig/default-database.json
 
-    # Wrap scripts with proper runtime dependencies
-    wrapProgram $out/bin/pkg-config \
-      --prefix PATH : ${lib.makeBinPath [ nix ]} \
-      --prefix PYTHONPATH : ${python3.pkgs.makePythonPath finalAttrs.pythonPath} \
-      --set NIX_PATH nixpkgs=${"\${NIX_PATH:-<nixpkgs>}"} \
-      --set PYTHON ${python3.interpreter}
+        # Wrap the runtime version with proper dependencies  
+        wrapProgram $out/bin/nix-pkgconfig.py \
+          --prefix PATH : ${lib.makeBinPath [ nix ]} \
+          --prefix PYTHONPATH : ${python3.pkgs.makePythonPath finalAttrs.pythonPath} \
+          --set NIX_PATH nixpkgs=${"\${NIX_PATH:-<nixpkgs>}"}
+        
+        # The shell wrapper just needs to find the wrapped Python script
+        wrapProgram $out/bin/pkg-config \
+          --prefix PATH : ${lib.makeBinPath [ nix ]}
 
-    wrapProgram $out/bin/nix-pkgconfig-build-database \
-      --prefix PATH : ${
-        lib.makeBinPath [
-          nix
-          nix-index
-          python3
-        ]
-      } \
-      --prefix PYTHONPATH : ${python3.pkgs.makePythonPath finalAttrs.pythonPath} \
-      --set NIX_PATH nixpkgs=${"\${NIX_PATH:-<nixpkgs>}"} \
-      --set PYTHON ${python3.interpreter}
+        wrapProgram $out/bin/nix-pkgconfig-build-database \
+          --prefix PATH : ${
+            lib.makeBinPath [
+              nix
+              nix-index
+              python3
+            ]
+          } \
+          --prefix PYTHONPATH : ${python3.pkgs.makePythonPath finalAttrs.pythonPath} \
+          --set NIX_PATH nixpkgs=${"\${NIX_PATH:-<nixpkgs>}"} \
+          --set PYTHON ${python3.interpreter}
 
-    wrapProgram $out/bin/nix-pkgconfig-build-pc-index \
-      --prefix PATH : ${lib.makeBinPath [ nix-index ]} \
-      --prefix PYTHONPATH : ${python3.pkgs.makePythonPath finalAttrs.pythonPath} \
-      --set PYTHON ${python3.interpreter}
+        wrapProgram $out/bin/nix-pkgconfig-build-pc-index \
+          --prefix PATH : ${lib.makeBinPath [ nix-index ]} \
+          --prefix PYTHONPATH : ${python3.pkgs.makePythonPath finalAttrs.pythonPath} \
+          --set PYTHON ${python3.interpreter}
 
-    runHook postInstall
+        runHook postInstall
   '';
 
   meta = with lib; {

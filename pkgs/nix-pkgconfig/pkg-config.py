@@ -24,24 +24,24 @@ NixAttr = NewType("NixAttr", str)
 
 def find_databases() -> list[Path]:
     """Find available nix-pkgconfig database files.
-    
+
     Returns:
         List of database file paths, either from NIX_PKGCONFIG_DATABASES
         environment variable or from the default config directory.
     """
     if databases := os.environ.get("NIX_PKGCONFIG_DATABASES"):
         return [Path(db) for db in databases.split(":") if db]
-    
+
     config_home = Path(os.environ.get("XDG_CONFIG_HOME", Path.home() / ".config"))
     return sorted((config_home / "nix-pkgconfig").glob("*.json"))
 
 
 def read_databases(databases: list[Path]) -> dict[PackageName, NixAttr]:
     """Read package mappings from database files.
-    
+
     Args:
         databases: List of database file paths to read
-        
+
     Returns:
         Dictionary mapping package names to nixpkgs attributes
     """
@@ -56,7 +56,7 @@ def read_databases(databases: list[Path]) -> dict[PackageName, NixAttr]:
 
 def find_nixpkgs() -> str:
     """Find the nixpkgs path to use for package resolution.
-    
+
     Returns:
         Path to nixpkgs, either from environment or default "<nixpkgs>"
     """
@@ -65,11 +65,11 @@ def find_nixpkgs() -> str:
 
 def call_pkgconfig(attrs: list[NixAttr], args: list[str]) -> str:
     """Call pkg-config using a Nix expression with specified packages.
-    
+
     Args:
         attrs: List of nixpkgs attributes to include as build inputs
         args: Arguments to pass to pkg-config
-        
+
     Returns:
         Output from pkg-config command
     """
@@ -117,13 +117,13 @@ def call_pkgconfig(attrs: list[NixAttr], args: list[str]) -> str:
 
 def main() -> None:
     """Main entry point for nix-pkgconfig.
-    
+
     Processes command line arguments, finds appropriate nixpkgs attributes
     for requested packages, and calls pkg-config via Nix.
     """
     dbs = find_databases()
     pkgs = read_databases(dbs)
-    
+
     if "--list-all" in sys.argv:
         # Show real pkg-config packages plus our mapped packages
         result = call_pkgconfig([], sys.argv[1:])
