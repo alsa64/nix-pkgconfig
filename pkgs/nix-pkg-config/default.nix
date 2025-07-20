@@ -1,86 +1,39 @@
 {
   lib,
-  stdenv,
   python3,
   nix,
   nix-index,
-  makeWrapper,
 }:
 
 # Ensure we're using a modern Python version (3.11+)
 assert lib.versionAtLeast python3.version "3.11";
 
-stdenv.mkDerivation (finalAttrs: {
+python3.pkgs.buildPythonApplication {
   pname = "nix-pkg-config";
   version = "1.0.0";
+  pyproject = true;
 
-  src = ./.;
+  src = ../../.;
 
-  nativeBuildInputs = [ makeWrapper ];
-  buildInputs = [ python3 ];
+  build-system = [ python3.pkgs.setuptools ];
+  
+  # Runtime dependencies
+  propagatedBuildInputs = [ nix nix-index ];
 
-  # Ensure Python version compatibility
-  pythonPath = [ python3.pkgs.setuptools ];
-
-  dontBuild = true;
-
-  installPhase = ''
-        runHook preInstall
-
-        mkdir -p $out/bin $out/share/nix-pkg-config
-
-        # Install the main Python script (unwrapped for development use)
-        cp src/pkg_config.py $out/bin/pkg-config.py
-        chmod +x $out/bin/pkg-config.py
-        
-        # Create a wrapper script without .py extension  
-        cat > $out/bin/pkg-config <<EOF
-    #!/bin/sh
-    exec "${python3.interpreter}" "$out/bin/nix-pkg-config.py" "\$@"
-    EOF
-        chmod +x $out/bin/pkg-config
-        
-        # Create wrapped version of Python script for Nix runtime
-        cp src/pkg_config.py $out/bin/nix-pkg-config.py
-        chmod +x $out/bin/nix-pkg-config.py
-
-        # Install helper scripts
-        cp src/build-database.sh $out/bin/nix-pkg-config-build-database
-        cp src/build_pc_index.py $out/bin/nix-pkg-config-build-pc-index
-        chmod +x $out/bin/nix-pkg-config-build-database
-        chmod +x $out/bin/nix-pkg-config-build-pc-index
-
-        # Install default database
-        cp src/default-database.json $out/share/nix-pkg-config/default-database.json
-
-        # Wrap the runtime version with proper dependencies  
-        wrapProgram $out/bin/nix-pkg-config.py \
-          --prefix PATH : ${lib.makeBinPath [ nix ]} \
-          --prefix PYTHONPATH : ${python3.pkgs.makePythonPath finalAttrs.pythonPath} \
-          --set NIX_PATH nixpkgs=${"\${NIX_PATH:-<nixpkgs>}"}
-        
-        # The shell wrapper just needs to find the wrapped Python script
-        wrapProgram $out/bin/pkg-config \
-          --prefix PATH : ${lib.makeBinPath [ nix ]}
-
-        wrapProgram $out/bin/nix-pkg-config-build-database \
-          --prefix PATH : ${
-            lib.makeBinPath [
-              nix
-              nix-index
-              python3
-            ]
-          } \
-          --prefix PYTHONPATH : ${python3.pkgs.makePythonPath finalAttrs.pythonPath} \
-          --set NIX_PATH nixpkgs=${"\${NIX_PATH:-<nixpkgs>}"} \
-          --set PYTHON ${python3.interpreter}
-
-        wrapProgram $out/bin/nix-pkg-config-build-pc-index \
-          --prefix PATH : ${lib.makeBinPath [ nix-index ]} \
-          --prefix PYTHONPATH : ${python3.pkgs.makePythonPath finalAttrs.pythonPath} \
-          --set PYTHON ${python3.interpreter}
-
-        runHook postInstall
+  postInstall = ''
+    # Install default database
+    mkdir -p $out/share/nix-pkg-config
+    cp $src/pkgs/nix-pkg-config/src/nix_pkg_config/default-database.json $out/share/nix-pkg-config/default-database.json
+    
+    # Install bash script for build-database command
+    cp $src/pkgs/nix-pkg-config/src/nix_pkg_config/build-database.sh $out/bin/nix-pkg-config-build-database
+    chmod +x $out/bin/nix-pkg-config-build-database
+    
+    # Wrap the build-database script with proper environment
+    wrapProgram $out/bin/nix-pkg-config-build-database \
+      --prefix PATH : ${lib.makeBinPath [ nix nix-index python3 ]} \
+      --set NIX_PATH nixpkgs=\${NIX_PATH:-<nixpkgs>} \
+      --set PYTHON ${python3.interpreter}
   '';
 
   meta = with lib; {
@@ -95,8 +48,8 @@ stdenv.mkDerivation (finalAttrs: {
     license = licenses.mit;
     maintainers = [ ];
     platforms = platforms.unix;
-    mainProgram = "pkg-config";
+    mainProgram = "nix-pkg-config";
     # Require Python 3.11+ for modern typing features
     broken = !lib.versionAtLeast python3.version "3.11";
   };
-})
+}

@@ -5,7 +5,7 @@
 
     # Wrapper version that replaces pkg-config system-wide
     nix-pkg-config-wrapped = final.writeShellScriptBin "pkg-config" ''
-      exec ${final.nix-pkg-config}/bin/pkg-config "$@"
+      exec ${final.nix-pkg-config}/bin/nix-pkg-config "$@"
     '';
   };
 }

@@ -35,10 +35,10 @@ in
       if cfg.wrapPkgConfig then
         [
           (pkgs.writeShellScriptBin "pkg-config" ''
-            exec ${cfg.package}/bin/pkg-config "$@"
+            exec ${cfg.package}/bin/nix-pkg-config "$@"
           '')
           (pkgs.writeShellScriptBin "pkgconfig" ''
-            exec ${cfg.package}/bin/pkg-config "$@"
+            exec ${cfg.package}/bin/nix-pkg-config "$@"
           '')
         ]
       else

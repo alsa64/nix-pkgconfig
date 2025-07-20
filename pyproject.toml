@@ -7,9 +7,15 @@ requires-python = ">=3.11"
 dependencies = []
 
 [project.scripts]
-pkg-config = "pkg_config:main"
-nix-pkg-config = "pkg_config:main"
-nix-pkg-config-build-pc-index = "build_pc_index:main"
+nix-pkg-config = "nix_pkg_config.pkg_config:main"
+nix-pkg-config-build-pc-index = "nix_pkg_config.build_pc_index:main"
+
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
 where = ["pkgs/nix-pkg-config/src"]
+
+[tool.setuptools.package-dir]
+"" = "pkgs/nix-pkg-config/src"
