@@ -7,7 +7,10 @@
   makeWrapper,
 }:
 
-stdenv.mkDerivation rec {
+# Ensure we're using a modern Python version (3.11+)
+assert lib.versionAtLeast python3.version "3.11";
+
+stdenv.mkDerivation (finalAttrs: {
   pname = "nix-pkgconfig";
   version = "1.0.0";
 
@@ -15,6 +18,9 @@ stdenv.mkDerivation rec {
 
   nativeBuildInputs = [ makeWrapper ];
   buildInputs = [ python3 ];
+
+  # Ensure Python version compatibility
+  pythonPath = [ python3.pkgs.setuptools ];
 
   dontBuild = true;
 
@@ -39,7 +45,9 @@ stdenv.mkDerivation rec {
     # Wrap scripts with proper runtime dependencies
     wrapProgram $out/bin/pkg-config \
       --prefix PATH : ${lib.makeBinPath [ nix ]} \
-      --set NIX_PATH nixpkgs=${"\${NIX_PATH:-<nixpkgs>}"}
+      --prefix PYTHONPATH : ${python3.pkgs.makePythonPath finalAttrs.pythonPath} \
+      --set NIX_PATH nixpkgs=${"\${NIX_PATH:-<nixpkgs>}"} \
+      --set PYTHON ${python3.interpreter}
 
     wrapProgram $out/bin/nix-pkgconfig-build-database \
       --prefix PATH : ${
@@ -49,10 +57,14 @@ stdenv.mkDerivation rec {
           python3
         ]
       } \
-      --set NIX_PATH nixpkgs=${"\${NIX_PATH:-<nixpkgs>}"}
+      --prefix PYTHONPATH : ${python3.pkgs.makePythonPath finalAttrs.pythonPath} \
+      --set NIX_PATH nixpkgs=${"\${NIX_PATH:-<nixpkgs>}"} \
+      --set PYTHON ${python3.interpreter}
 
     wrapProgram $out/bin/nix-pkgconfig-build-pc-index \
-      --prefix PATH : ${lib.makeBinPath [ nix-index ]}
+      --prefix PATH : ${lib.makeBinPath [ nix-index ]} \
+      --prefix PYTHONPATH : ${python3.pkgs.makePythonPath finalAttrs.pythonPath} \
+      --set PYTHON ${python3.interpreter}
 
     runHook postInstall
   '';
@@ -62,12 +74,15 @@ stdenv.mkDerivation rec {
     longDescription = ''
       nix-pkgconfig is a wrapper for pkg-config allowing nix-unaware applications
       (e.g. cabal-install) to use packages from nixpkgs to satisfy native library
-      dependencies.
+      dependencies. It provides seamless integration between traditional build
+      systems and the Nix package ecosystem.
     '';
     homepage = "https://github.com/vyls/nix-pkgconfig";
     license = licenses.mit;
     maintainers = [ ];
-    platforms = platforms.all;
+    platforms = platforms.unix;
     mainProgram = "pkg-config";
+    # Require Python 3.11+ for modern typing features
+    broken = !lib.versionAtLeast python3.version "3.11";
   };
-}
+})
