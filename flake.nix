@@ -9,34 +9,53 @@
   };
 
   outputs =
-    { self, nixpkgs, flake-utils, treefmt-nix, ... }:
+    {
+      self,
+      nixpkgs,
+      flake-utils,
+      treefmt-nix,
+      ...
+    }:
     let
       inherit (self) outputs;
       systems = flake-utils.lib.defaultSystems;
       forEachSystem = nixpkgs.lib.genAttrs systems;
-      pkgsFor = system: import nixpkgs {
-        inherit system;
-        overlays = [ self.overlays.default ];
-      };
-      treefmtEval = forEachSystem (system: treefmt-nix.lib.evalModule (pkgsFor system) {
-        projectRootFile = "flake.nix";
-        programs = {
-          nixfmt.enable = true;
-          shfmt.enable = true;
-          shellcheck.enable = true;
-          prettier.enable = true;
-          taplo.enable = true;
-          ruff-format.enable = true;
-          ruff-check.enable = true;
+      pkgsFor =
+        system:
+        import nixpkgs {
+          inherit system;
+          overlays = [ self.overlays.default ];
         };
-        settings.global.excludes = [
-          "*.gif" "*.jpg" "*.jpeg" "*.png" "*.webp" "*.svg"
-          "*.lock" "*.log"
-          "result*"
-          ".direnv/"
-          "_build/" "dist/" "node_modules/"
-        ];
-      });
+      treefmtEval = forEachSystem (
+        system:
+        treefmt-nix.lib.evalModule (pkgsFor system) {
+          projectRootFile = "flake.nix";
+          programs = {
+            nixfmt.enable = true;
+            shfmt.enable = true;
+            shellcheck.enable = true;
+            prettier.enable = true;
+            taplo.enable = true;
+            ruff-format.enable = true;
+            ruff-check.enable = true;
+          };
+          settings.global.excludes = [
+            "*.gif"
+            "*.jpg"
+            "*.jpeg"
+            "*.png"
+            "*.webp"
+            "*.svg"
+            "*.lock"
+            "*.log"
+            "result*"
+            ".direnv/"
+            "_build/"
+            "dist/"
+            "node_modules/"
+          ];
+        }
+      );
     in
     {
       # Packages for each system
@@ -47,12 +66,15 @@
       });
 
       # Overlays
-      overlays = import ./overlays { inputs = {}; inherit outputs; };
+      overlays = import ./overlays {
+        inputs = { };
+        inherit outputs;
+      };
 
       # NixOS and Home Manager modules
       nixosModules.default = import ./modules/nixos.nix;
       homeManagerModules.default = import ./modules/home-manager.nix;
-      
+
       # Config modules for direct import
       nixosModules.nix-pkgconfig = import ./modules/nixos.nix;
       homeManagerModules.nix-pkgconfig = import ./modules/home-manager.nix;

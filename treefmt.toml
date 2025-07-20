@@ -7,11 +7,19 @@ allow-missing-formatter = true
 
 # Exclude files or directories matching the specified globs
 excludes = [
-  "*.gif", "*.jpg", "*.jpeg", "*.png", "*.webp", "*.svg",
-  "*.lock", "*.log",
+  "*.gif",
+  "*.jpg",
+  "*.jpeg",
+  "*.png",
+  "*.webp",
+  "*.svg",
+  "*.lock",
+  "*.log",
   "result*",
   ".direnv/",
-  "_build/", "dist/", "node_modules/"
+  "_build/",
+  "dist/",
+  "node_modules/",
 ]
 
 # Nix files
@@ -52,13 +60,23 @@ includes = ["*.rs"]
 command = "prettier"
 options = ["--write"]
 includes = [
-  "*.js", "*.jsx", "*.ts", "*.tsx",
-  "*.json", "*.jsonc",
-  "*.css", "*.scss", "*.sass",
-  "*.html", "*.htm",
-  "*.md", "*.mdx",
-  "*.yaml", "*.yml",
-  "*.vue", "*.svelte"
+  "*.js",
+  "*.jsx",
+  "*.ts",
+  "*.tsx",
+  "*.json",
+  "*.jsonc",
+  "*.css",
+  "*.scss",
+  "*.sass",
+  "*.html",
+  "*.htm",
+  "*.md",
+  "*.mdx",
+  "*.yaml",
+  "*.yml",
+  "*.vue",
+  "*.svelte",
 ]
 
 # TOML files
@@ -78,8 +96,16 @@ includes = ["*.md", "*.mdx"]
 command = "codespell"
 options = ["--write-changes"]
 includes = [
-  "*.md", "*.rst", "*.txt",
-  "*.py", "*.js", "*.ts",
-  "*.nix", "*.sh", "*.bash",
-  "*.toml", "*.yaml", "*.yml"
+  "*.md",
+  "*.rst",
+  "*.txt",
+  "*.py",
+  "*.js",
+  "*.ts",
+  "*.nix",
+  "*.sh",
+  "*.bash",
+  "*.toml",
+  "*.yaml",
+  "*.yml",
 ]

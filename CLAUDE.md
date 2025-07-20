@@ -19,6 +19,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Common Commands
 
 ### Development
+
 ```sh
 # Enter development shell with all dependencies
 nix develop
@@ -32,6 +33,7 @@ nix build .#nix-pkgconfig-wrapped
 ```
 
 ### Building the database
+
 ```sh
 # Using the built package
 nix run .#nix-pkgconfig -- nix-pkgconfig-build-database
@@ -41,11 +43,12 @@ nix-pkgconfig-build-database
 ```
 
 ### Testing module integration
+
 ```sh
 # Test NixOS module
 nix build .#nixosConfigurations.test.config.system.build.toplevel
 
-# Test Home Manager module  
+# Test Home Manager module
 nix build .#homeConfigurations.test.activationPackage
 ```
 

@@ -1,4 +1,9 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 let
   cfg = config.programs.nix-pkgconfig;
@@ -26,19 +31,23 @@ in
   };
 
   config = lib.mkIf cfg.enable {
-    home.packages = if cfg.wrapPkgConfig then [
-      (pkgs.writeShellScriptBin "pkg-config" ''
-        exec ${cfg.package}/bin/pkg-config "$@"
-      '')
-      (pkgs.writeShellScriptBin "pkgconfig" ''
-        exec ${cfg.package}/bin/pkg-config "$@"
-      '')
-    ] else [
-      cfg.package
-    ];
+    home.packages =
+      if cfg.wrapPkgConfig then
+        [
+          (pkgs.writeShellScriptBin "pkg-config" ''
+            exec ${cfg.package}/bin/pkg-config "$@"
+          '')
+          (pkgs.writeShellScriptBin "pkgconfig" ''
+            exec ${cfg.package}/bin/pkg-config "$@"
+          '')
+        ]
+      else
+        [
+          cfg.package
+        ];
 
     # Create database directory
-    home.activation.nix-pkgconfig-setup = lib.hm.dag.entryAfter ["writeBoundary"] ''
+    home.activation.nix-pkgconfig-setup = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
       mkdir -p $HOME/.config/nix-pkgconfig
       if [[ ! -f $HOME/.config/nix-pkgconfig/001-default.json ]]; then
         $DRY_RUN_CMD cp ${cfg.package}/share/nix-pkgconfig/default-database.json $HOME/.config/nix-pkgconfig/001-default.json

@@ -1,4 +1,9 @@
-{ config, lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 let
   cfg = config.programs.nix-pkgconfig;
@@ -26,16 +31,20 @@ in
   };
 
   config = lib.mkIf cfg.enable {
-    environment.systemPackages = if cfg.wrapPkgConfig then [
-      (pkgs.writeShellScriptBin "pkg-config" ''
-        exec ${cfg.package}/bin/pkg-config "$@"
-      '')
-      (pkgs.writeShellScriptBin "pkgconfig" ''
-        exec ${cfg.package}/bin/pkg-config "$@"
-      '')
-    ] else [
-      cfg.package
-    ];
+    environment.systemPackages =
+      if cfg.wrapPkgConfig then
+        [
+          (pkgs.writeShellScriptBin "pkg-config" ''
+            exec ${cfg.package}/bin/pkg-config "$@"
+          '')
+          (pkgs.writeShellScriptBin "pkgconfig" ''
+            exec ${cfg.package}/bin/pkg-config "$@"
+          '')
+        ]
+      else
+        [
+          cfg.package
+        ];
 
     # Ensure nix-index is available for database building
     programs.nix-index.enable = lib.mkDefault true;

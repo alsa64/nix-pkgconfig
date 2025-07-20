@@ -9,6 +9,7 @@ dependencies).
 ### Using NixOS Module
 
 #### Option 1: Import from flake inputs
+
 Add to your `configuration.nix`:
 
 ```nix
@@ -26,6 +27,7 @@ Add to your `configuration.nix`:
 ```
 
 #### Option 2: Direct module import
+
 Add to your system modules:
 
 ```nix
@@ -49,6 +51,7 @@ Add to your system modules:
 ### Using Home Manager Module
 
 #### Option 1: Import from flake inputs
+
 Add to your `home.nix`:
 
 ```nix
@@ -66,6 +69,7 @@ Add to your `home.nix`:
 ```
 
 #### Option 2: Direct module import
+
 Add to your home configuration modules:
 
 ```nix
