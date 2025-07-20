@@ -4,57 +4,202 @@
 `cabal-install`) to use packages from `nixpkgs` (to satisfy native library
 dependencies).
 
-## Getting started
+## Installation
 
-`nix-pkgconfig` relies on a database of mappings between `pkg-config` `.pc`
-files and the `nixpkgs` attribute they are provided by. A minimal example
-database (`default-database.json`) is included which can be installed via:
+### Using NixOS Module
 
-```sh
-mkdir -p $XDG_CONFIG_HOME/nix-pkgconfig
-cp default-database.json $XDG_CONFIG_HOME/nix-pkgconfig/001-default.json
+#### Option 1: Import from flake inputs
+Add to your `configuration.nix`:
+
+```nix
+{
+  inputs.nix-pkgconfig.url = "github:vyls/nix-pkgconfig";
+
+  # In your configuration
+  imports = [ inputs.nix-pkgconfig.nixosModules.default ];
+
+  programs.nix-pkgconfig = {
+    enable = true;
+    wrapPkgConfig = true; # Replace system pkg-config with nix-pkgconfig
+  };
+}
 ```
 
-However, it is recommended that you build a more complete database covering
-nearly all of `nixpkgs`. This can be built using the `build-database.sh` script:
+#### Option 2: Direct module import
+Add to your system modules:
 
-```sh
-./build-database.sh
+```nix
+{
+  inputs.nix-pkgconfig.url = "github:vyls/nix-pkgconfig";
+
+  # In your system configuration
+  nixosConfigurations.your-system = nixpkgs.lib.nixosSystem {
+    modules = [
+      ./configuration.nix
+      inputs.nix-pkgconfig.nixosModules.nix-pkgconfig
+      {
+        programs.nix-pkgconfig.enable = true;
+        programs.nix-pkgconfig.wrapPkgConfig = true;
+      }
+    ];
+  };
+}
 ```
 
-The script is provided by the `nix-pkgconfig` package, build it by running:
+### Using Home Manager Module
+
+#### Option 1: Import from flake inputs
+Add to your `home.nix`:
+
+```nix
+{
+  inputs.nix-pkgconfig.url = "github:vyls/nix-pkgconfig";
+
+  # In your home configuration
+  imports = [ inputs.nix-pkgconfig.homeManagerModules.default ];
+
+  programs.nix-pkgconfig = {
+    enable = true;
+    wrapPkgConfig = false; # Just provide nix-pkgconfig binary
+  };
+}
+```
+
+#### Option 2: Direct module import
+Add to your home configuration modules:
+
+```nix
+{
+  inputs.nix-pkgconfig.url = "github:vyls/nix-pkgconfig";
+
+  # In your home configuration
+  homeConfigurations.your-user = home-manager.lib.homeManagerConfiguration {
+    modules = [
+      ./home.nix
+      inputs.nix-pkgconfig.homeManagerModules.nix-pkgconfig
+      {
+        programs.nix-pkgconfig.enable = true;
+        programs.nix-pkgconfig.wrapPkgConfig = false;
+      }
+    ];
+  };
+}
+```
+
+### Manual Installation
+
+Install directly from the flake:
 
 ```sh
+# Install as nix-pkgconfig binary only
+nix profile install github:vyls/nix-pkgconfig
+
+# Or use in a shell
+nix shell github:vyls/nix-pkgconfig
+
+# Build locally
 nix build .#nix-pkgconfig
 ```
 
-The repository also contains an overlay, making it easy to deploy nix-pkgconfig
-in any flake based environment.
+### Using Overlay
 
-When called the `pkg-config` wrapper will consult the database looking for the
-`nix` derivation providing each requested package, build it, and run the
-requested `pkg-config` invocation. For instance, we can run:
+In your flake:
+
+```nix
+{
+  inputs.nix-pkgconfig.url = "github:vyls/nix-pkgconfig";
+
+  nixpkgs.overlays = [ inputs.nix-pkgconfig.overlays.default ];
+
+  # Now available as: pkgs.nix-pkgconfig and pkgs.nix-pkgconfig-wrapped
+}
+```
+
+## Configuration Options
+
+The modules support the following options:
+
+- `enable`: Enable nix-pkgconfig
+- `package`: Which package to use (default: `pkgs.nix-pkgconfig`)
+- `wrapPkgConfig`: Whether to wrap system `pkg-config` commands (default: `false`)
+
+When `wrapPkgConfig = true`, both `pkg-config` and `pkgconfig` commands will use nix-pkgconfig automatically.
+
+## Database Setup
+
+`nix-pkgconfig` relies on a database of mappings between `pkg-config` `.pc`
+files and the `nixpkgs` attributes they are provided by.
+
+### Automatic Setup
+
+When using the modules, a minimal database is automatically installed. For home-manager, the database directory is created and the default database is copied on first activation.
+
+### Manual Database Setup
+
+```sh
+# Install minimal database
+mkdir -p $XDG_CONFIG_HOME/nix-pkgconfig
+cp $(nix build --no-link --print-out-paths .#nix-pkgconfig)/share/nix-pkgconfig/default-database.json \
+   $XDG_CONFIG_HOME/nix-pkgconfig/001-default.json
+```
+
+### Building Complete Database
+
+For better coverage, build a complete database covering most of nixpkgs:
+
+```sh
+# Using the installed script
+nix-pkgconfig-build-database
+
+# Or directly from the repo
+nix run .#nix-pkgconfig -- nix-pkgconfig-build-database
+```
+
+This creates a comprehensive database at `$XDG_CONFIG_HOME/nix-pkgconfig/002-nixpkgs.json`.
+
+## Usage
+
+Once configured, `pkg-config` calls will automatically use nixpkgs packages:
 
 ```sh
 $ pkg-config --cflags libpq
--I/nix/store/53kwps1ndh29wgjjwa7qf06ygvjxfs09-postgresql-9.6.11/include
+-I/nix/store/...-postgresql-15.4/include
+
+$ pkg-config --libs zlib
+-L/nix/store/...-zlib-1.2.13/lib -lz
 ```
 
-## Usage with cabal-install
+### Usage with cabal-install
 
-To use this with `cabal-install` you may either place `pkg-config` in `PATH` as
-described above or explicitly point `cabal` at the `pkg-config` script:
+For Haskell projects, either:
+
+1. Use the wrapper mode (`wrapPkgConfig = true`) for automatic integration
+2. Explicitly specify the pkg-config binary:
 
 ```sh
-cabal new-build --with-pkg-config=$PATH_TO_THIS_REPO/pkg-config
+cabal build --with-pkg-config=$(which nix-pkgconfig)
 ```
 
-Alternatively, you might consider either adding `nix-pkgconfig` to
-`environment.systemPackages` or your account's mutable environment (e.g.
-`nix profile install .#nix-pkgconfig`).
+3. Copy the included `cabal.project.local` to enable pkg-config flags:
 
-Note that some packages respect the `pkg-config` flag to enable
-`pkg-config`-based native library discovery. The included
-`cabal.project.local` includes some `project` stanzas to enable the necessary
-flags with cabal `new-build`. Copy these into your project's
-`cabal.project.local` if you intend on using `nix-pkgconfig`.
+```cabal
+package postgresql-libpq
+  flags: use-pkg-config
+
+package zlib
+  flags: pkg-config
+```
+
+## Development
+
+```sh
+# Enter development shell
+nix develop
+
+# Format code
+nix fmt
+
+# Build and test
+nix build
+nix run .#nix-pkgconfig -- --help
+```
