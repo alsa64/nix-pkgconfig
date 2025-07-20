@@ -1,8 +1,6 @@
 # nix-pkgconfig
 
-`nix-pkgconfig` is a wrapper for `pkg-config` allowing nix-unaware applications (e.g.
-`cabal-install`) to use packages from `nixpkgs` (to satisfy native library
-dependencies).
+`nix-pkgconfig` is a wrapper for `pkg-config` allowing nix-unaware applications (e.g. `cabal-install`) to use packages from `nixpkgs` (to satisfy native library dependencies).
 
 ## Installation
 
@@ -131,8 +129,7 @@ When `wrapPkgConfig = true`, both `pkg-config` and `pkgconfig` commands will use
 
 ## Database Setup
 
-`nix-pkgconfig` relies on a database of mappings between `pkg-config` `.pc`
-files and the `nixpkgs` attributes they are provided by.
+`nix-pkgconfig` relies on a database of mappings between `pkg-config` `.pc` files and the `nixpkgs` attributes they are provided by.
 
 ### Automatic Setup
 

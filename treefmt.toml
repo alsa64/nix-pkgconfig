@@ -42,12 +42,12 @@ includes = ["*.sh", "*.bash"]
 [formatter.python-format]
 command = "ruff"
 options = ["format"]
-includes = ["*.py"]
+includes = ["*.py", "pkg-config"]
 
 [formatter.python-lint]
 command = "ruff"
 options = ["check", "--fix"]
-includes = ["*.py"]
+includes = ["*.py", "pkg-config"]
 
 # Rust files
 [formatter.rust]
@@ -58,7 +58,7 @@ includes = ["*.rs"]
 # JavaScript/TypeScript/JSON/CSS/HTML/Markdown
 [formatter.prettier]
 command = "prettier"
-options = ["--write"]
+options = ["--write", "--print-width=120", "--prose-wrap=never"]
 includes = [
   "*.js",
   "*.jsx",
@@ -84,12 +84,6 @@ includes = [
 command = "taplo"
 options = ["format"]
 includes = ["*.toml"]
-
-# Markdown specific linting
-[formatter.markdown-lint]
-command = "markdownlint"
-options = ["--fix"]
-includes = ["*.md", "*.mdx"]
 
 # Spell checking
 [formatter.codespell]

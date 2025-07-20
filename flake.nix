@@ -34,10 +34,28 @@
             nixfmt.enable = true;
             shfmt.enable = true;
             shellcheck.enable = true;
-            prettier.enable = true;
+            prettier = {
+              enable = true;
+              settings = {
+                printWidth = 120;
+                proseWrap = "never";
+              };
+            };
             taplo.enable = true;
-            ruff-format.enable = true;
-            ruff-check.enable = true;
+            ruff-format = {
+              enable = true;
+              includes = [
+                "*.py"
+                "pkg-config"
+              ];
+            };
+            ruff-check = {
+              enable = true;
+              includes = [
+                "*.py"
+                "pkg-config"
+              ];
+            };
           };
           settings.global.excludes = [
             "*.gif"
