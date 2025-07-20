@@ -1,0 +1,85 @@
+# The formatter multiplexer - https://github.com/numtide/treefmt
+# This file is for standalone treefmt usage (non-Nix environments)
+# For Nix environments, treefmt is configured in flake.nix
+
+# Do not exit with error if a configured formatter is missing
+allow-missing-formatter = true
+
+# Exclude files or directories matching the specified globs
+excludes = [
+  "*.gif", "*.jpg", "*.jpeg", "*.png", "*.webp", "*.svg",
+  "*.lock", "*.log",
+  "result*",
+  ".direnv/",
+  "_build/", "dist/", "node_modules/"
+]
+
+# Nix files
+[formatter.nix]
+command = "nixfmt"
+includes = ["*.nix"]
+
+# Shell scripts
+[formatter.shell-format]
+command = "shfmt"
+options = ["-i", "2", "-ci", "-s"]
+includes = ["*.sh", "*.bash"]
+
+[formatter.shell-check]
+command = "shellcheck"
+options = ["-e", "SC2086", "-e", "SC2002"]
+includes = ["*.sh", "*.bash"]
+
+# Python files
+[formatter.python-format]
+command = "ruff"
+options = ["format"]
+includes = ["*.py"]
+
+[formatter.python-lint]
+command = "ruff"
+options = ["check", "--fix"]
+includes = ["*.py"]
+
+# Rust files
+[formatter.rust]
+command = "rustfmt"
+options = ["--edition", "2021"]
+includes = ["*.rs"]
+
+# JavaScript/TypeScript/JSON/CSS/HTML/Markdown
+[formatter.prettier]
+command = "prettier"
+options = ["--write"]
+includes = [
+  "*.js", "*.jsx", "*.ts", "*.tsx",
+  "*.json", "*.jsonc",
+  "*.css", "*.scss", "*.sass",
+  "*.html", "*.htm",
+  "*.md", "*.mdx",
+  "*.yaml", "*.yml",
+  "*.vue", "*.svelte"
+]
+
+# TOML files
+[formatter.toml]
+command = "taplo"
+options = ["format"]
+includes = ["*.toml"]
+
+# Markdown specific linting
+[formatter.markdown-lint]
+command = "markdownlint"
+options = ["--fix"]
+includes = ["*.md", "*.mdx"]
+
+# Spell checking
+[formatter.codespell]
+command = "codespell"
+options = ["--write-changes"]
+includes = [
+  "*.md", "*.rst", "*.txt",
+  "*.py", "*.js", "*.ts",
+  "*.nix", "*.sh", "*.bash",
+  "*.toml", "*.yaml", "*.yml"
+]

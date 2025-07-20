@@ -4,10 +4,12 @@
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
     flake-utils.url = "github:numtide/flake-utils";
+    treefmt-nix.url = "github:numtide/treefmt-nix";
+    treefmt-nix.inputs.nixpkgs.follows = "nixpkgs";
   };
 
   outputs =
-    { self, nixpkgs, flake-utils, ... }:
+    { self, nixpkgs, flake-utils, treefmt-nix, ... }:
     let
       inherit (self) outputs;
       systems = flake-utils.lib.defaultSystems;
@@ -16,6 +18,25 @@
         inherit system;
         overlays = [ self.overlays.default ];
       };
+      treefmtEval = forEachSystem (system: treefmt-nix.lib.evalModule (pkgsFor system) {
+        projectRootFile = "flake.nix";
+        programs = {
+          nixfmt.enable = true;
+          shfmt.enable = true;
+          shellcheck.enable = true;
+          prettier.enable = true;
+          taplo.enable = true;
+          ruff-format.enable = true;
+          ruff-check.enable = true;
+        };
+        settings.global.excludes = [
+          "*.gif" "*.jpg" "*.jpeg" "*.png" "*.webp" "*.svg"
+          "*.lock" "*.log"
+          "result*"
+          ".direnv/"
+          "_build/" "dist/" "node_modules/"
+        ];
+      });
     in
     {
       # Packages for each system
@@ -42,17 +63,26 @@
           buildInputs = with (pkgsFor system); [
             python3
             nix-index
+            # Formatting tools
+            treefmtEval.${system}.config.build.wrapper
             nixfmt-rfc-style
+            shfmt
+            shellcheck
+            ruff
+            prettier
+            taplo
+            codespell
           ];
         };
       });
 
       # Formatter
-      formatter = forEachSystem (system: (pkgsFor system).nixfmt-rfc-style);
+      formatter = forEachSystem (system: treefmtEval.${system}.config.build.wrapper);
 
       # Checks
       checks = forEachSystem (system: {
         nix-pkgconfig = self.packages.${system}.nix-pkgconfig;
+        formatting = treefmtEval.${system}.config.build.check self;
       });
     };
 }
